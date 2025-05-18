@@ -1,0 +1,42 @@
+services:
+  app:
+    build: .
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - .env
+    networks:
+      - barcode_generator
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - barcode_generator
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    networks:
+      - barcode_generator
+    restart: unless-stopped
+
+networks:
+  barcode_generator:
+    name: barcode_generator_network
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: barcode_generator_postgres_data
+  redis_data:
+    name: barcode_generator_redis_data
