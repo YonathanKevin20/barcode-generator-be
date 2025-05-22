@@ -26,8 +26,8 @@ func (m *mockStatusRepo) FindAll() ([]models.Status, error) {
 
 func TestGetStatuses_Success(t *testing.T) {
 	mockRepo := newMockStatusRepo()
-	mockRepo.statuses["0"] = &models.Status{ID: 1, Name: "Active"}
-	mockRepo.statuses["1"] = &models.Status{ID: 2, Name: "Inactive"}
+	mockRepo.statuses["0"] = &models.Status{ID: 1, Name: "In Stock"}
+	mockRepo.statuses["1"] = &models.Status{ID: 2, Name: "Konsinyasi"}
 	SetStatusRepository(mockRepo)
 	app := fiber.New()
 	app.Get("/statuses", GetStatuses)
