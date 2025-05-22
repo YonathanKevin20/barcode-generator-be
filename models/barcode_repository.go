@@ -25,13 +25,14 @@ type BarcodeFilter struct {
 }
 
 type BarcodeResult struct {
-	ID           uint      `json:"id"`
-	CreatedAt    time.Time `json:"created_at"`
-	StatusName   string    `json:"status_name"`
-	CategoryName string    `json:"category_name"`
-	SupplierName string    `json:"supplier_name"`
-	ProductName  string    `json:"product_name"`
-	Barcode      string    `json:"barcode"`
+	ID            uint      `json:"id"`
+	CreatedAt     time.Time `json:"created_at"`
+	CreatedByUser *string   `json:"created_by_user"`
+	StatusName    string    `json:"status_name"`
+	CategoryName  string    `json:"category_name"`
+	SupplierName  string    `json:"supplier_name"`
+	ProductName   string    `json:"product_name"`
+	Barcode       string    `json:"barcode"`
 }
 
 type GormBarcodeRepository struct{}
@@ -57,7 +58,8 @@ func (r *GormBarcodeRepository) FindAllWithFilter(filter *BarcodeFilter) ([]Barc
 
 	var results []BarcodeResult
 	db := config.DB.Table("barcodes").
-		Select("barcodes.id, barcodes.created_at, statuses.name AS status_name, categories.name AS category_name, suppliers.name AS supplier_name, product_name, barcodes.barcode").
+		Select("barcodes.id, barcodes.created_at, users.username AS created_by_user, statuses.name AS status_name, categories.name AS category_name, suppliers.name AS supplier_name, product_name, barcodes.barcode").
+		Joins("LEFT JOIN users ON barcodes.created_by = users.id").
 		Joins("INNER JOIN statuses ON barcodes.status_id = statuses.id").
 		Joins("INNER JOIN categories ON barcodes.category_id = categories.id").
 		Joins("INNER JOIN suppliers ON barcodes.supplier_id = suppliers.id")

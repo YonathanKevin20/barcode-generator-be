@@ -115,6 +115,10 @@ func CreateBarcode(c *fiber.Ctx) error {
 	// Generate barcode with the new productCode
 	barcode.Barcode = generateBarcode(barcode.StatusID, category.Code, supplier.Code, nextProductCode)
 
+	// Set CreatedByID
+	userID := c.Locals("id").(uint)
+	barcode.CreatedBy = &userID
+
 	if err := config.DB.Create(&barcode).Error; err != nil {
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to create barcode")
 	}
