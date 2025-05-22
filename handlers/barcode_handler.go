@@ -50,6 +50,28 @@ func GetBarcodes(c *fiber.Ctx) error {
 	return utils.PaginatedResponse(c, results, total, page, limit)
 }
 
+type ActiveBarcodesQuery struct {
+	IDs []uint `query:"id"`
+}
+
+func GetActiveBarcodes(c *fiber.Ctx) error {
+	var q ActiveBarcodesQuery
+	if err := c.QueryParser(&q); err != nil {
+		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid query parameters")
+	}
+	if len(q.IDs) == 0 {
+		return utils.ErrorResponse(c, fiber.StatusBadRequest, "No IDs provided")
+	}
+	barcodes, err := models.BarcodeRepo.FindActiveByIDs(q.IDs)
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve barcodes")
+	}
+	if len(barcodes) == 0 {
+		return utils.ErrorResponse(c, fiber.StatusNotFound, "No barcodes found for the provided IDs")
+	}
+	return utils.JSONResponse(c, fiber.StatusOK, barcodes)
+}
+
 func GetBarcode(c *fiber.Ctx) error {
 	id := c.Params("id")
 	idUint, _ := strconv.ParseUint(id, 10, 32)

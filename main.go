@@ -127,6 +127,7 @@ func setupRoutes(app *fiber.App) {
 
 	// Barcode routes
 	api.Get("/barcodes", handlers.GetBarcodes)
+	api.Get("/barcodes/active", handlers.GetActiveBarcodes)
 	api.Get("/barcodes/:id", handlers.GetBarcode)
 	api.Post("/barcodes", handlers.CreateBarcode)
 	api.Patch("/barcodes/:id/inactive", handlers.UpdateBarcodeInactive)
