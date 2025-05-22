@@ -9,12 +9,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-var categoryRepo models.CategoryRepository = &models.GormCategoryRepository{}
-
-func SetCategoryRepository(repo models.CategoryRepository) {
-	categoryRepo = repo
-}
-
 func GetCategories(c *fiber.Ctx) error {
 	page := c.QueryInt("page", 1)
 	limit := c.QueryInt("limit", 10)
@@ -29,7 +23,7 @@ func GetCategories(c *fiber.Ctx) error {
 	filter.Offset = offset
 	filter.Limit = limit
 
-	categories, total, err := categoryRepo.FindAllWithFilter(&filter)
+	categories, total, err := models.CategoryRepo.FindAllWithFilter(&filter)
 	if err != nil {
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve categories")
 	}
@@ -40,7 +34,7 @@ func GetCategories(c *fiber.Ctx) error {
 func GetCategory(c *fiber.Ctx) error {
 	id := c.Params("id")
 	idUint, _ := strconv.ParseUint(id, 10, 32)
-	category, err := categoryRepo.FindByID(uint(idUint))
+	category, err := models.CategoryRepo.FindByID(uint(idUint))
 	if err != nil {
 		return utils.ErrorResponse(c, fiber.StatusNotFound, "Category not found")
 	}
@@ -63,15 +57,15 @@ func CreateCategory(c *fiber.Ctx) error {
 		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Category Code must be exactly 4 characters long")
 	}
 
-	if existing, err := categoryRepo.FindByCode(category.Code); err == nil && existing != nil && existing.ID != 0 {
+	if existing, err := models.CategoryRepo.FindByCode(category.Code); err == nil && existing != nil && existing.ID != 0 {
 		return utils.ErrorResponse(c, fiber.StatusConflict, "Category with this Code already exists")
 	}
 
-	if existing, err := categoryRepo.FindByCodeAndName(category.Code, category.Name); err == nil && existing != nil && existing.ID != 0 {
+	if existing, err := models.CategoryRepo.FindByCodeAndName(category.Code, category.Name); err == nil && existing != nil && existing.ID != 0 {
 		return utils.ErrorResponse(c, fiber.StatusConflict, "Category with this Code and Name already exists")
 	}
 
-	if err := categoryRepo.Create(category); err != nil {
+	if err := models.CategoryRepo.Create(category); err != nil {
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to create category")
 	}
 	return utils.JSONResponse(c, fiber.StatusCreated, fiber.Map{"message": "Category created successfully"})
@@ -85,13 +79,13 @@ func UpdateCategory(c *fiber.Ctx) error {
 		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid input")
 	}
 
-	existingCategory, err := categoryRepo.FindByID(uint(idUint))
+	existingCategory, err := models.CategoryRepo.FindByID(uint(idUint))
 	if err != nil {
 		return utils.ErrorResponse(c, fiber.StatusNotFound, "Category not found")
 	}
 
 	category.ID = existingCategory.ID // ensure correct ID
-	if err := categoryRepo.Update(category); err != nil {
+	if err := models.CategoryRepo.Update(category); err != nil {
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to update category")
 	}
 	return utils.JSONResponse(c, fiber.StatusOK, fiber.Map{"message": "Category updated successfully"})
@@ -100,11 +94,11 @@ func UpdateCategory(c *fiber.Ctx) error {
 func DeleteCategory(c *fiber.Ctx) error {
 	id := c.Params("id")
 	idUint, _ := strconv.ParseUint(id, 10, 32)
-	category, err := categoryRepo.FindByID(uint(idUint))
+	category, err := models.CategoryRepo.FindByID(uint(idUint))
 	if err != nil {
 		return utils.ErrorResponse(c, fiber.StatusNotFound, "Category not found")
 	}
-	if err := categoryRepo.Delete(category); err != nil {
+	if err := models.CategoryRepo.Delete(category); err != nil {
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to delete category")
 	}
 	return utils.JSONResponse(c, fiber.StatusOK, fiber.Map{"message": "Category deleted successfully"})

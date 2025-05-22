@@ -21,6 +21,12 @@ type SupplierFilter struct {
 
 type GormSupplierRepository struct{}
 
+var SupplierRepo SupplierRepository = &GormSupplierRepository{}
+
+func SetSupplierRepository(repo SupplierRepository) {
+	SupplierRepo = repo
+}
+
 func (r *GormSupplierRepository) FindAll() ([]Supplier, error) {
 	var suppliers []Supplier
 	err := config.DB.Order("name ASC").Find(&suppliers).Error

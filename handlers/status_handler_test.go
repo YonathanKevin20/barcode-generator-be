@@ -24,11 +24,20 @@ func (m *mockStatusRepo) FindAll() ([]models.Status, error) {
 	return result, nil
 }
 
+func (m *mockStatusRepo) FindByID(id uint) (*models.Status, error) {
+	for _, u := range m.statuses {
+		if u.ID == id {
+			return u, nil
+		}
+	}
+	return nil, fiber.ErrNotFound
+}
+
 func TestGetStatuses_Success(t *testing.T) {
 	mockRepo := newMockStatusRepo()
 	mockRepo.statuses["0"] = &models.Status{ID: 1, Name: "In Stock"}
 	mockRepo.statuses["1"] = &models.Status{ID: 2, Name: "Konsinyasi"}
-	SetStatusRepository(mockRepo)
+	models.SetStatusRepository(mockRepo)
 	app := fiber.New()
 	app.Get("/statuses", GetStatuses)
 

@@ -22,6 +22,12 @@ type CategoryFilter struct {
 
 type GormCategoryRepository struct{}
 
+var CategoryRepo CategoryRepository = &GormCategoryRepository{}
+
+func SetCategoryRepository(repo CategoryRepository) {
+	CategoryRepo = repo
+}
+
 func (r *GormCategoryRepository) FindAll() ([]Category, error) {
 	var categories []Category
 	err := config.DB.Order("name ASC").Find(&categories).Error

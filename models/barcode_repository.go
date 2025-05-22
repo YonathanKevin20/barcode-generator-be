@@ -18,10 +18,13 @@ type BarcodeRepository interface {
 }
 
 type BarcodeFilter struct {
-	StatusID uint
-	Barcode  string
-	Offset   int
-	Limit    int
+	StatusID    uint
+	CategoryID  uint
+	SupplierID  uint
+	ProductName string
+	Barcode     string
+	Offset      int
+	Limit       int
 }
 
 type BarcodeResult struct {
@@ -37,6 +40,12 @@ type BarcodeResult struct {
 
 type GormBarcodeRepository struct{}
 
+var BarcodeRepo BarcodeRepository = &GormBarcodeRepository{}
+
+func SetBarcodeRepository(repo BarcodeRepository) {
+	BarcodeRepo = repo
+}
+
 func (r *GormBarcodeRepository) FindAll() ([]Barcode, error) {
 	var barcodes []Barcode
 	err := config.DB.Order("id DESC").Find(&barcodes).Error
@@ -47,6 +56,15 @@ func (r *GormBarcodeRepository) FindAllWithFilter(filter *BarcodeFilter) ([]Barc
 	query := config.DB.Model(&Barcode{})
 	if filter.StatusID != 0 {
 		query = query.Where("status_id = ?", filter.StatusID)
+	}
+	if filter.CategoryID != 0 {
+		query = query.Where("category_id = ?", filter.CategoryID)
+	}
+	if filter.SupplierID != 0 {
+		query = query.Where("supplier_id = ?", filter.SupplierID)
+	}
+	if filter.ProductName != "" {
+		query = query.Where("product_name LIKE ?", "%"+filter.ProductName+"%")
 	}
 	if filter.Barcode != "" {
 		query = query.Where("barcode LIKE ?", "%"+filter.Barcode+"%")
@@ -66,6 +84,15 @@ func (r *GormBarcodeRepository) FindAllWithFilter(filter *BarcodeFilter) ([]Barc
 	if filter.StatusID != 0 {
 		db = db.Where("barcodes.status_id = ?", filter.StatusID)
 	}
+	if filter.CategoryID != 0 {
+		db = db.Where("barcodes.category_id = ?", filter.CategoryID)
+	}
+	if filter.SupplierID != 0 {
+		db = db.Where("barcodes.supplier_id = ?", filter.SupplierID)
+	}
+	if filter.ProductName != "" {
+		db = db.Where("barcodes.product_name LIKE ?", "%"+filter.ProductName+"%")
+	}
 	if filter.Barcode != "" {
 		db = db.Where("barcodes.barcode LIKE ?", "%"+filter.Barcode+"%")
 	}
@@ -79,7 +106,8 @@ func (r *GormBarcodeRepository) FindAllWithFilter(filter *BarcodeFilter) ([]Barc
 func (r *GormBarcodeRepository) FindByID(id uint) (*BarcodeResult, error) {
 	var result BarcodeResult
 	err := config.DB.Table("barcodes").
-		Select("barcodes.id, barcodes.created_at, statuses.name AS status_name, categories.name AS category_name, suppliers.name AS supplier_name, product_name, barcodes.barcode").
+		Select("barcodes.id, barcodes.created_at, users.username AS created_by_user, statuses.name AS status_name, categories.name AS category_name, suppliers.name AS supplier_name, product_name, barcodes.barcode").
+		Joins("LEFT JOIN users ON barcodes.created_by = users.id").
 		Joins("INNER JOIN statuses ON barcodes.status_id = statuses.id").
 		Joins("INNER JOIN categories ON barcodes.category_id = categories.id").
 		Joins("INNER JOIN suppliers ON barcodes.supplier_id = suppliers.id").

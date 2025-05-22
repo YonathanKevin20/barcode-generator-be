@@ -7,14 +7,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-var statusRepo models.StatusRepository = &models.GormStatusRepository{}
-
-func SetStatusRepository(repo models.StatusRepository) {
-	statusRepo = repo
-}
-
 func GetStatuses(c *fiber.Ctx) error {
-	statuses, err := statusRepo.FindAll()
+	statuses, err := models.StatusRepo.FindAll()
 	if err != nil {
 		return utils.JSONResponse(c, fiber.StatusInternalServerError, fiber.Map{"error": "Failed to fetch statuses"})
 	}

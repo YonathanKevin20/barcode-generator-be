@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"barcode-generator-be/config"
 	"barcode-generator-be/models"
 	"barcode-generator-be/utils"
 	"strconv"
@@ -11,16 +10,13 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-var barcodeRepo models.BarcodeRepository = &models.GormBarcodeRepository{}
-
-func SetBarcodeRepository(repo models.BarcodeRepository) {
-	barcodeRepo = repo
-}
-
 func GetBarcodes(c *fiber.Ctx) error {
 	page := c.QueryInt("page", 1)
 	limit := c.QueryInt("limit", 10)
 	statusID := c.Query("status_id")
+	categoryID := c.Query("category_id")
+	supplierID := c.Query("supplier_id")
+	productName := c.Query("product_name")
 	barcode := c.Query("barcode")
 
 	offset := (page - 1) * limit
@@ -31,11 +27,22 @@ func GetBarcodes(c *fiber.Ctx) error {
 			filter.StatusID = uint(v)
 		}
 	}
+	if categoryID != "" {
+		if v, err := strconv.Atoi(categoryID); err == nil {
+			filter.CategoryID = uint(v)
+		}
+	}
+	if supplierID != "" {
+		if v, err := strconv.Atoi(supplierID); err == nil {
+			filter.SupplierID = uint(v)
+		}
+	}
+	filter.ProductName = productName
 	filter.Barcode = barcode
 	filter.Offset = offset
 	filter.Limit = limit
 
-	results, total, err := barcodeRepo.FindAllWithFilter(&filter)
+	results, total, err := models.BarcodeRepo.FindAllWithFilter(&filter)
 	if err != nil {
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to retrieve barcodes")
 	}
@@ -46,7 +53,7 @@ func GetBarcodes(c *fiber.Ctx) error {
 func GetBarcode(c *fiber.Ctx) error {
 	id := c.Params("id")
 	idUint, _ := strconv.ParseUint(id, 10, 32)
-	barcode, err := barcodeRepo.FindByID(uint(idUint))
+	barcode, err := models.BarcodeRepo.FindByID(uint(idUint))
 	if err != nil {
 		return utils.ErrorResponse(c, fiber.StatusNotFound, "Barcode not found")
 	}
@@ -82,32 +89,35 @@ func CreateBarcode(c *fiber.Ctx) error {
 		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid input")
 	}
 
-	// Check if Status exists
-	var status models.Status
-	if err := config.DB.First(&status, "id = ?", barcode.StatusID).Error; err != nil {
+	_, err := models.StatusRepo.FindByID(barcode.StatusID)
+	if err != nil {
 		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid Status ID")
 	}
 
-	// Check if Category exists
-	var category models.Category
-	if err := config.DB.First(&category, "id = ?", barcode.CategoryID).Error; err != nil {
+	category, err := models.CategoryRepo.FindByID(barcode.CategoryID)
+	if err != nil {
 		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid Category ID")
 	}
 
-	// Check if Supplier exists
-	var supplier models.Supplier
-	if err := config.DB.First(&supplier, "id = ?", barcode.SupplierID).Error; err != nil {
+	supplier, err := models.SupplierRepo.FindByID(barcode.SupplierID)
+	if err != nil {
 		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid Supplier ID")
 	}
 
-	// Check if Barcode already exists
-	var existingBarcode models.Barcode
-	if err := config.DB.First(&existingBarcode, "status_id = ? AND category_id = ? AND supplier_id = ? AND UPPER(product_name) = ?", barcode.StatusID, barcode.CategoryID, barcode.SupplierID, strings.ToUpper(barcode.ProductName)).Error; err == nil {
+	barcodeExists, _, err := models.BarcodeRepo.FindAllWithFilter(&models.BarcodeFilter{
+		StatusID:    barcode.StatusID,
+		CategoryID:  barcode.CategoryID,
+		SupplierID:  barcode.SupplierID,
+		ProductName: strings.ToUpper(barcode.ProductName),
+		Offset:      0,
+		Limit:       1,
+	})
+	if err == nil && len(barcodeExists) > 0 {
 		return utils.ErrorResponse(c, fiber.StatusConflict, "Barcode already exists")
 	}
 
 	// Generate next product code
-	nextProductCode, err := barcodeRepo.GetNextProductCode(barcode.CategoryID, barcode.SupplierID)
+	nextProductCode, err := models.BarcodeRepo.GetNextProductCode(barcode.CategoryID, barcode.SupplierID)
 	if err != nil {
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to generate product code")
 	}
@@ -119,7 +129,7 @@ func CreateBarcode(c *fiber.Ctx) error {
 	userID := c.Locals("id").(uint)
 	barcode.CreatedBy = &userID
 
-	if err := config.DB.Create(&barcode).Error; err != nil {
+	if err := models.BarcodeRepo.Create(barcode); err != nil {
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to create barcode")
 	}
 
@@ -129,11 +139,11 @@ func CreateBarcode(c *fiber.Ctx) error {
 func DeleteBarcode(c *fiber.Ctx) error {
 	id := c.Params("id")
 	idUint, _ := strconv.ParseUint(id, 10, 32)
-	barcode, err := barcodeRepo.FindByID(uint(idUint))
+	barcode, err := models.BarcodeRepo.FindByID(uint(idUint))
 	if err != nil {
 		return utils.ErrorResponse(c, fiber.StatusNotFound, "Barcode not found")
 	}
-	if err := barcodeRepo.Delete(barcode.ID); err != nil {
+	if err := models.BarcodeRepo.Delete(barcode.ID); err != nil {
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to delete barcode")
 	}
 	return utils.JSONResponse(c, fiber.StatusOK, fiber.Map{"message": "Barcode deleted successfully"})
