@@ -18,5 +18,5 @@ type Barcode struct {
 	Supplier      *Supplier `gorm:"foreignKey:SupplierID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"supplier,omitempty"`
 	ProductName   string    `gorm:"size:100;not null;index" json:"product_name"`
 	Barcode       string    `gorm:"size:13;uniqueIndex;not null" json:"barcode"`
-	IsActive      bool      `gorm:"default:true;not null" json:"is_active"`
+	IsInactive    bool      `gorm:"default:false" json:"is_inactive"`
 }

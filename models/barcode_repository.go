@@ -13,6 +13,7 @@ type BarcodeRepository interface {
 	FindByID(id uint) (*BarcodeResult, error)
 	Create(barcode *Barcode) error
 	Update(barcode *Barcode) error
+	UpdateInactive(id uint, isInactive bool) error
 	Delete(id uint) error
 	GetNextProductCode(categoryID, supplierID uint) (string, error)
 }
@@ -36,6 +37,7 @@ type BarcodeResult struct {
 	SupplierName  string    `json:"supplier_name"`
 	ProductName   string    `json:"product_name"`
 	Barcode       string    `json:"barcode"`
+	IsInactive    bool      `json:"is_inactive"`
 }
 
 type GormBarcodeRepository struct{}
@@ -74,9 +76,8 @@ func (r *GormBarcodeRepository) FindAllWithFilter(filter *BarcodeFilter) ([]Barc
 		return nil, 0, err
 	}
 
-	var results []BarcodeResult
 	db := config.DB.Table("barcodes").
-		Select("barcodes.id, barcodes.created_at, users.username AS created_by_user, statuses.name AS status_name, categories.name AS category_name, suppliers.name AS supplier_name, product_name, barcodes.barcode").
+		Select("barcodes.id, barcodes.created_at, users.username AS created_by_user, statuses.name AS status_name, categories.name AS category_name, suppliers.name AS supplier_name, product_name, barcodes.barcode, barcodes.is_inactive").
 		Joins("LEFT JOIN users ON barcodes.created_by = users.id").
 		Joins("INNER JOIN statuses ON barcodes.status_id = statuses.id").
 		Joins("INNER JOIN categories ON barcodes.category_id = categories.id").
@@ -96,8 +97,8 @@ func (r *GormBarcodeRepository) FindAllWithFilter(filter *BarcodeFilter) ([]Barc
 	if filter.Barcode != "" {
 		db = db.Where("barcodes.barcode LIKE ?", "%"+filter.Barcode+"%")
 	}
-	db = db.Order("barcodes.created_at DESC").Offset(filter.Offset).Limit(filter.Limit)
-	if err := db.Find(&results).Error; err != nil {
+	var results []BarcodeResult
+	if err := db.Order("barcodes.created_at DESC").Offset(filter.Offset).Limit(filter.Limit).Find(&results).Error; err != nil {
 		return nil, 0, err
 	}
 	return results, total, nil
@@ -106,7 +107,7 @@ func (r *GormBarcodeRepository) FindAllWithFilter(filter *BarcodeFilter) ([]Barc
 func (r *GormBarcodeRepository) FindByID(id uint) (*BarcodeResult, error) {
 	var result BarcodeResult
 	err := config.DB.Table("barcodes").
-		Select("barcodes.id, barcodes.created_at, users.username AS created_by_user, statuses.name AS status_name, categories.name AS category_name, suppliers.name AS supplier_name, product_name, barcodes.barcode").
+		Select("barcodes.id, barcodes.created_at, users.username AS created_by_user, statuses.name AS status_name, categories.name AS category_name, suppliers.name AS supplier_name, product_name, barcodes.barcode, barcodes.is_inactive").
 		Joins("LEFT JOIN users ON barcodes.created_by = users.id").
 		Joins("INNER JOIN statuses ON barcodes.status_id = statuses.id").
 		Joins("INNER JOIN categories ON barcodes.category_id = categories.id").
@@ -122,6 +123,10 @@ func (r *GormBarcodeRepository) Create(barcode *Barcode) error {
 
 func (r *GormBarcodeRepository) Update(barcode *Barcode) error {
 	return config.DB.Model(barcode).Updates(barcode).Error
+}
+
+func (r *GormBarcodeRepository) UpdateInactive(id uint, isInactive bool) error {
+	return config.DB.Model(&Barcode{}).Where("id = ?", id).Update("is_inactive", isInactive).Error
 }
 
 func (r *GormBarcodeRepository) Delete(id uint) error {

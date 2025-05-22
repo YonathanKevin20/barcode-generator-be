@@ -136,6 +136,19 @@ func CreateBarcode(c *fiber.Ctx) error {
 	return utils.JSONResponse(c, fiber.StatusCreated, fiber.Map{"message": "Barcode created successfully"})
 }
 
+func UpdateBarcodeInactive(c *fiber.Ctx) error {
+	id := c.Params("id")
+	idUint, _ := strconv.ParseUint(id, 10, 32)
+	barcode, err := models.BarcodeRepo.FindByID(uint(idUint))
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusNotFound, "Barcode not found")
+	}
+	if err := models.BarcodeRepo.UpdateInactive(barcode.ID, !barcode.IsInactive); err != nil {
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to update barcode inactive")
+	}
+	return utils.JSONResponse(c, fiber.StatusOK, fiber.Map{"message": "Barcode inactive updated successfully"})
+}
+
 func DeleteBarcode(c *fiber.Ctx) error {
 	id := c.Params("id")
 	idUint, _ := strconv.ParseUint(id, 10, 32)
