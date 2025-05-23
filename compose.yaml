@@ -20,14 +20,14 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - barcode_generator
-    restart: unless-stopped
+    restart: always
   redis:
     image: redis:7-alpine
     volumes:
       - redis_data:/data
     networks:
       - barcode_generator
-    restart: unless-stopped
+    restart: always
 
 networks:
   barcode_generator:
