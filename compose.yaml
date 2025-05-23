@@ -1,6 +1,7 @@
 services:
-  app:
+  api:
     build: .
+    image: barcode-generator-api:1.0.0
     depends_on:
       - postgres
       - redis
@@ -9,7 +10,6 @@ services:
     networks:
       - barcode_generator
     restart: unless-stopped
-
   postgres:
     image: postgres:15-alpine
     environment:
@@ -21,7 +21,6 @@ services:
     networks:
       - barcode_generator
     restart: unless-stopped
-
   redis:
     image: redis:7-alpine
     volumes:

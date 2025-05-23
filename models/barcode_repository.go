@@ -99,7 +99,7 @@ func (r *GormBarcodeRepository) FindAllWithFilter(filter *BarcodeFilter) ([]Barc
 		db = db.Where("barcodes.barcode LIKE ?", "%"+filter.Barcode+"%")
 	}
 	var results []BarcodeResult
-	if err := db.Order("barcodes.created_at DESC").Offset(filter.Offset).Limit(filter.Limit).Find(&results).Error; err != nil {
+	if err := db.Order("barcodes.created_at DESC, barcodes.id DESC").Offset(filter.Offset).Limit(filter.Limit).Find(&results).Error; err != nil {
 		return nil, 0, err
 	}
 	return results, total, nil
@@ -127,7 +127,7 @@ func (r *GormBarcodeRepository) FindActiveByIDs(ids []uint) ([]BarcodeResult, er
 		Joins("INNER JOIN categories ON barcodes.category_id = categories.id").
 		Joins("INNER JOIN suppliers ON barcodes.supplier_id = suppliers.id").
 		Where("barcodes.id IN (?) AND barcodes.is_inactive = false", ids).
-		Order("barcodes.created_at DESC").
+		Order("barcodes.created_at DESC, barcodes.id DESC").
 		Find(&results).Error
 	return results, err
 }
