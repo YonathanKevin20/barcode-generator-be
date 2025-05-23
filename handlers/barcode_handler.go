@@ -15,7 +15,9 @@ func GetBarcodes(c *fiber.Ctx) error {
 	limit := c.QueryInt("limit", 10)
 	statusID := c.Query("status_id")
 	categoryID := c.Query("category_id")
+	categoryName := c.Query("category_name")
 	supplierID := c.Query("supplier_id")
+	supplierName := c.Query("supplier_name")
 	productName := c.Query("product_name")
 	barcode := c.Query("barcode")
 
@@ -37,7 +39,9 @@ func GetBarcodes(c *fiber.Ctx) error {
 			filter.SupplierID = uint(v)
 		}
 	}
-	filter.ProductName = productName
+	filter.CategoryName = strings.ToUpper(categoryName)
+	filter.SupplierName = strings.ToUpper(supplierName)
+	filter.ProductName = strings.ToUpper(productName)
 	filter.Barcode = barcode
 	filter.Offset = offset
 	filter.Limit = limit

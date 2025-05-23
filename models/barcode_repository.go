@@ -20,13 +20,15 @@ type BarcodeRepository interface {
 }
 
 type BarcodeFilter struct {
-	StatusID    uint
-	CategoryID  uint
-	SupplierID  uint
-	ProductName string
-	Barcode     string
-	Offset      int
-	Limit       int
+	StatusID     uint
+	CategoryID   uint
+	CategoryName string
+	SupplierID   uint
+	SupplierName string
+	ProductName  string
+	Barcode      string
+	Offset       int
+	Limit        int
 }
 
 type BarcodeResult struct {
@@ -63,8 +65,16 @@ func (r *GormBarcodeRepository) FindAllWithFilter(filter *BarcodeFilter) ([]Barc
 	if filter.CategoryID != 0 {
 		query = query.Where("category_id = ?", filter.CategoryID)
 	}
+	if filter.CategoryName != "" {
+		query = query.Joins("INNER JOIN categories ON barcodes.category_id = categories.id").
+			Where("categories.name LIKE ?", "%"+filter.CategoryName+"%")
+	}
 	if filter.SupplierID != 0 {
 		query = query.Where("supplier_id = ?", filter.SupplierID)
+	}
+	if filter.SupplierName != "" {
+		query = query.Joins("INNER JOIN suppliers ON barcodes.supplier_id = suppliers.id").
+			Where("suppliers.name LIKE ?", "%"+filter.SupplierName+"%")
 	}
 	if filter.ProductName != "" {
 		query = query.Where("product_name LIKE ?", "%"+filter.ProductName+"%")
@@ -89,8 +99,14 @@ func (r *GormBarcodeRepository) FindAllWithFilter(filter *BarcodeFilter) ([]Barc
 	if filter.CategoryID != 0 {
 		db = db.Where("barcodes.category_id = ?", filter.CategoryID)
 	}
+	if filter.CategoryName != "" {
+		db = db.Where("categories.name LIKE ?", "%"+filter.CategoryName+"%")
+	}
 	if filter.SupplierID != 0 {
 		db = db.Where("barcodes.supplier_id = ?", filter.SupplierID)
+	}
+	if filter.SupplierName != "" {
+		db = db.Where("suppliers.name LIKE ?", "%"+filter.SupplierName+"%")
 	}
 	if filter.ProductName != "" {
 		db = db.Where("barcodes.product_name LIKE ?", "%"+filter.ProductName+"%")
