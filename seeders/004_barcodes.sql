@@ -332,7 +332,7 @@ INSERT INTO "public"."barcodes" ("created_at", "created_by", "status_id", "categ
 INSERT INTO "public"."barcodes" ("created_at", "created_by", "status_id", "category_id", "supplier_id", "product_name", "barcode") VALUES ('2025-05-01 00:00:00', 1, 2, 9, 1012, 'LP BODY BOSS CSF13-10', '2101910111546');
 INSERT INTO "public"."barcodes" ("created_at", "created_by", "status_id", "category_id", "supplier_id", "product_name", "barcode") VALUES ('2025-05-01 00:00:00', 1, 2, 9, 1012, 'LP BODY BOSS LC162-BE BZ', '2101910111553');
 
-INSERT INTO "public"."barcodes" ("created_at", "created_by", "status_id", "category_id", "supplier_id", "product_name", "barcode") VALUES ('2025-05-19 02:25:23', 1, 1, 139, 63, 'TEST BIKIN BUFF', '1142000620013');
+
 INSERT INTO "public"."barcodes" ("created_at", "created_by", "status_id", "category_id", "supplier_id", "product_name", "barcode") VALUES ('2025-05-19 02:34:21', 1, 1, 38, 997, 'LONG COAT HOODIE PUMA', '1111009960017');
 INSERT INTO "public"."barcodes" ("created_at", "created_by", "status_id", "category_id", "supplier_id", "product_name", "barcode") VALUES ('2025-05-19 06:43:41', 1, 1, 6, 997, 'JKT KS HOODIE BANG BANG', '1101609960012');
 INSERT INTO "public"."barcodes" ("created_at", "created_by", "status_id", "category_id", "supplier_id", "product_name", "barcode") VALUES ('2025-05-20 02:10:49', 1, 1, 49, 997, 'LP SPORT BANG BANG', '1112109960020');
