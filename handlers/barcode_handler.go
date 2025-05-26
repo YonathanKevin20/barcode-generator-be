@@ -130,16 +130,13 @@ func CreateBarcode(c *fiber.Ctx) error {
 		return utils.ErrorResponse(c, fiber.StatusBadRequest, "Invalid Supplier ID")
 	}
 
-	barcodeExists, _, err := models.BarcodeRepo.FindAllWithFilter(&models.BarcodeFilter{
-		StatusID:    barcode.StatusID,
-		CategoryID:  barcode.CategoryID,
-		SupplierID:  barcode.SupplierID,
-		ProductName: strings.ToUpper(barcode.ProductName),
-		Offset:      0,
-		Limit:       1,
-	})
-	if err == nil && len(barcodeExists) > 0 {
-		return utils.ErrorResponse(c, fiber.StatusConflict, "Barcode already exists")
+	// Check if barcode already exists
+	exists, err := models.BarcodeRepo.FindExists(barcode.StatusID, barcode.CategoryID, barcode.SupplierID, strings.ToUpper(barcode.ProductName))
+	if err != nil {
+		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Failed to check existing barcode")
+	}
+	if exists {
+		return utils.ErrorResponse(c, fiber.StatusConflict, "Barcode already exists for this product")
 	}
 
 	// Generate next product code

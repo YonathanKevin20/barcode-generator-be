@@ -10,6 +10,7 @@ import (
 type BarcodeRepository interface {
 	FindAll() ([]Barcode, error)
 	FindAllWithFilter(filter *BarcodeFilter) ([]BarcodeResult, int64, error)
+	FindExists(statusID, categoryID, supplierID uint, productName string) (bool, error)
 	FindByID(id uint) (*BarcodeResult, error)
 	FindActiveByIDs(ids []uint) ([]BarcodeResult, error)
 	Create(barcode *Barcode) error
@@ -119,6 +120,17 @@ func (r *GormBarcodeRepository) FindAllWithFilter(filter *BarcodeFilter) ([]Barc
 		return nil, 0, err
 	}
 	return results, total, nil
+}
+
+func (r *GormBarcodeRepository) FindExists(statusID, categoryID, supplierID uint, productName string) (bool, error) {
+	var count int64
+	err := config.DB.Model(&Barcode{}).
+		Where("status_id = ? AND category_id = ? AND supplier_id = ? AND product_name = ?", statusID, categoryID, supplierID, productName).
+		Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }
 
 func (r *GormBarcodeRepository) FindByID(id uint) (*BarcodeResult, error) {
