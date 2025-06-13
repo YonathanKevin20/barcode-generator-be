@@ -117,6 +117,11 @@ func UpdateUser(c *fiber.Ctx) error {
 	}
 
 	if input.Username != "" {
+		// Check if the new username is already taken by a different user
+		potentialUser, err := userRepo.FindByUsername(input.Username)
+		if err == nil && potentialUser != nil && potentialUser.ID != existingUser.ID {
+			return utils.ErrorResponse(c, fiber.StatusConflict, "Username already exists")
+		}
 		existingUser.Username = input.Username
 	}
 

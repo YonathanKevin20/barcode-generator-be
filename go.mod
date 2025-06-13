@@ -1,6 +1,6 @@
 module barcode-generator-be
 
-go 1.24.3
+go 1.24.4
 
 require (
 	github.com/bytedance/sonic v1.13.2
