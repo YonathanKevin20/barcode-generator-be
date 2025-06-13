@@ -28,6 +28,23 @@ services:
     networks:
       - barcode_generator
     restart: always
+  backup:
+    image: postgres:15-alpine
+    env_file:
+      - .env
+    volumes:
+      - ./backups:/backups
+      - ./backup.sh:/app/backup.sh
+    working_dir: /app
+    entrypoint: /bin/sh -c 'echo "0 0 * * * /bin/sh /app/backup.sh" > /etc/crontabs/root && crond -f -l 2'
+    networks:
+      - barcode_generator
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      - UID=${UID:-1000}
+      - GID=${GID:-1000}
 
 networks:
   barcode_generator:
