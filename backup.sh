@@ -7,7 +7,7 @@ if [ -f .env ]; then
 fi
 
 # Ensure backups directory exists (absolute path)
-mkdir -p /backups
+mkdir -p /backups && chown ${UID:-1000}:${GID:-1000} /backups
 # Remove backups older than 30 days
 find /backups -type f -name "*.sql" -mtime +30 -delete
 
