@@ -3,6 +3,10 @@
 .env
 *.exe
 *.md
+# Ignore backups folder and scripts
+backups/
+backup.sh
+restore.sh
 main
 vendor/
 .editorconfig
