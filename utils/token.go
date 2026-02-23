@@ -2,6 +2,7 @@ package utils
 
 import (
 	"barcode-generator-be/models"
+	"log"
 	"os"
 	"time"
 
@@ -27,6 +28,7 @@ func GetTokenClaims(tokenString string) (jwt.MapClaims, error) {
 	})
 
 	if err != nil {
+		log.Printf("Error parsing token: %v", err)
 		return nil, err
 	}
 

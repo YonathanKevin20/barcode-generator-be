@@ -68,7 +68,7 @@ func main() {
 
 	// Start server
 	if err := app.Listen(":8080"); err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
 }
 

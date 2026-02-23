@@ -20,7 +20,7 @@ func AuthMiddleware(c *fiber.Ctx) error {
 
 	claims, err := utils.GetTokenClaims(tokenString)
 	if err != nil {
-		return utils.ErrorResponse(c, fiber.StatusUnauthorized, err.Error())
+		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "Invalid or expired token")
 	}
 
 	jti, ok := claims["jti"].(string)

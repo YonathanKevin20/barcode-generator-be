@@ -28,6 +28,7 @@ type BarcodeFilter struct {
 	SupplierName string
 	ProductName  string
 	Barcode      string
+	Active       bool
 	Offset       int
 	Limit        int
 }
@@ -83,6 +84,9 @@ func (r *GormBarcodeRepository) FindAllWithFilter(filter *BarcodeFilter) ([]Barc
 	if filter.Barcode != "" {
 		query = query.Where("barcode LIKE ?", "%"+filter.Barcode+"%")
 	}
+	if filter.Active {
+		query = query.Where("is_inactive = ?", false)
+	}
 	var total int64
 	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err
@@ -114,6 +118,9 @@ func (r *GormBarcodeRepository) FindAllWithFilter(filter *BarcodeFilter) ([]Barc
 	}
 	if filter.Barcode != "" {
 		db = db.Where("barcodes.barcode LIKE ?", "%"+filter.Barcode+"%")
+	}
+	if filter.Active {
+		db = db.Where("barcodes.is_inactive = ?", false)
 	}
 	var results []BarcodeResult
 	if err := db.Order("barcodes.created_at DESC, barcodes.id DESC").Offset(filter.Offset).Limit(filter.Limit).Find(&results).Error; err != nil {

@@ -20,6 +20,7 @@ func GetBarcodes(c *fiber.Ctx) error {
 	supplierName := c.Query("supplier_name")
 	productName := c.Query("product_name")
 	barcode := c.Query("barcode")
+	active := c.QueryBool("active")
 
 	offset := (page - 1) * limit
 
@@ -43,6 +44,7 @@ func GetBarcodes(c *fiber.Ctx) error {
 	filter.SupplierName = strings.ToUpper(supplierName)
 	filter.ProductName = strings.ToUpper(productName)
 	filter.Barcode = barcode
+	filter.Active = active
 	filter.Offset = offset
 	filter.Limit = limit
 

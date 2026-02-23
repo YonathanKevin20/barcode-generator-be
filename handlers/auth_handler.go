@@ -70,7 +70,6 @@ func Login(c *fiber.Ctx) error {
 		return utils.ErrorResponse(c, fiber.StatusUnauthorized, "Invalid password")
 	}
 
-	// Generate JWT token
 	token, err := utils.GenerateToken(user)
 	if err != nil {
 		return utils.ErrorResponse(c, fiber.StatusInternalServerError, "Could not generate token")

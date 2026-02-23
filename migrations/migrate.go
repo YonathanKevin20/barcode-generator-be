@@ -1,7 +1,6 @@
 package migrations
 
 import (
-	"barcode-generator-be/config"
 	"barcode-generator-be/models"
 
 	"gorm.io/gorm"
@@ -9,7 +8,7 @@ import (
 
 func Migrate(db *gorm.DB) error {
 	// Run manual migrations
-	if err := CreateUserRoleEnum(db); err != nil {
+	if err := createUserRoleEnum(db); err != nil {
 		return err
 	}
 
@@ -34,15 +33,15 @@ func Migrate(db *gorm.DB) error {
 	return nil
 }
 
-func CreateUserRoleEnum(db *gorm.DB) error {
+func createUserRoleEnum(db *gorm.DB) error {
 	var exists bool
-	err := config.DB.Raw("SELECT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_role')").Scan(&exists).Error
+	err := db.Raw("SELECT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_role')").Scan(&exists).Error
 	if err != nil {
 		return err
 	}
 
 	if !exists {
-		if err := config.DB.Exec("CREATE TYPE user_role AS ENUM ('admin', 'operator')").Error; err != nil {
+		if err := db.Exec("CREATE TYPE user_role AS ENUM ('admin', 'operator')").Error; err != nil {
 			return err
 		}
 	}
